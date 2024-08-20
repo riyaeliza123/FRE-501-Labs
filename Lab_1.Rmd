@@ -1,0 +1,10 @@
+---
+title: "Lab 1 FRE 501"
+output: pdf_document
+date: "2024-08-20"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
