@@ -8,3 +8,123 @@ date: "2024-08-20"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Imports
+
+```{r}
+library(lubridate)
+library(readr)
+library(tidyverse)
+
+library(here)
+library(janitor)
+library(tidyverse)
+library(lubridate)
+library(readxl)
+library(gridExtra)
+library(scales)
+library(cowplot)
+library(stargazer)
+library(tsibble)
+library(reshape2)
+
+```
+
+# Read data
+
+```{r}
+wheat <- read_csv("data/wheat_historical.csv")
+
+head(wheat)
+```
+
+```{r}
+wheat_small <- wheat |>
+                mutate(Time = mdy(Time)) |>
+                select(Time, Volume, `Open Int`) |>
+                mutate(Year = year(Time), Month = month(Time))
+head(wheat_small)
+```
+
+# Plot OI across all years
+
+```{r}
+plt_overall <- ggplot(wheat_small,aes(x=Time,y=`Open Int`)) + 
+                  geom_line() +
+                  labs(title = "Open Interest Across all Contracts (Wheat)",
+                        x = "Date",
+                        y = "Number of Contracts")
+plt_overall
+```
+
+# Plot OI for one particular year
+
+```{r}
+wheat_2022 <- wheat_small |> filter(Year==2022)
+
+plt_2022 <- ggplot(wheat_2022, aes(x=Time,y=`Open Int`)) + 
+              geom_line() +
+              labs(title = "OI in 2022",x = "Month",
+                   y = "Number of contracts") 
+plt_2022
+```
+
+# Plot OI for one specific month (all years)
+
+```{r}
+month_data <- wheat_small |> filter(Month == 8)
+
+plt_month <- ggplot(month_data, 
+                    aes(x=factor(Year), y=`Open Int`)) + 
+                geom_col(fill = "lightblue") +
+                labs(title = "August Contract OI",x = "",y = "")
+
+plt_month
+```
+
+# Plotting in a grid
+
+```{r}
+plot_grid(plt_overall, plt_2022, plt_month,
+          ncol = 2,          
+          align = 'v')
+```
+
+# Create month and year dummies
+
+The goal is to simulate a one-hot encoded columns for month and year: ![](img/dummies.png)
+
+```{r}
+wheat_small <- wheat_small %>%
+                mutate(d1 = ifelse(Month==1,1,0),
+                       d2 = ifelse(Month==2,1,0),
+                       d3 = ifelse(Month==3,1,0),
+                       d4 = ifelse(Month==4,1,0),
+                       d5 = ifelse(Month==5,1,0),
+                       d6 = ifelse(Month==6,1,0),
+                       d7 = ifelse(Month==7,1,0),
+                       d8 = ifelse(Month==8,1,0),
+                       d9 = ifelse(Month==9,1,0),
+                       d10 = ifelse(Month==10,1,0),
+                       d11 = ifelse(Month==11,1,0),
+                       D2022 = ifelse(Year==2022,1,0),
+                       D2023 = ifelse(Year==2023,1,0),
+                       D2024 = ifelse(Year==2024,1,0))
+
+head(wheat_small)
+```
+
+# Regression
+
+```{r}
+wheat_lm <- lm(`Open Int` ~ d1 + d2 + d3 + d4 + d5 + d6 + d7 + d8 + d9 + d10 +
+                     d11 + D2022 + D2023 + D2024,
+                   data = wheat_small)
+summary(wheat_lm)
+```
+
+# Print in a readable table (stargazer)
+
+```{r}
+stargazer(wheat_lm, type = "text", digits = 0,
+          title="Results", align=TRUE)
+```
