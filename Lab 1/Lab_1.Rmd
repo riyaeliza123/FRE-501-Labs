@@ -10,22 +10,27 @@ date: "2024-08-20"
 
 # 0. Objectives
 
-## 0.1 Lab objective
+## 0.1 Technical objectives
 
 1.  Learn the functionalities and nuances of various R packages
 2.  Understand the difference between various operators and data types
 3.  Understand how to handle "date and time" data
 4.  Learn how to plot using ggplot package
 
-## 0.2 Learning outcome
+## 0.2 Conceptual objectives
+
+1.  Understand the concept of open interest
+
+## 0.3 Learning outcome
 
 1.  Able to load and use necessary packages
 2.  Able to identify which operator is necessary and use them to solve problems
 3.  Able to handle various data types and convert to necessary formats
 4.  Able to plot figures as necessary
+5.  Able to define and analyse open interest
 
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(eval = FALSE)
+knitr::opts_chunk$set(eval = TRUE)
 ```
 
 # 1. Package handling
@@ -46,7 +51,7 @@ Once you have installed a package onto your computer, you need to import only **
 
 ```{r}
 
-# options(warn = -1) # To supress warnings
+options(warn = -1) # To supress warnings
 
 library(lubridate) # For handling date and time
 library(readr)     # For reading data (read_csv, read_excel etc.)
@@ -92,9 +97,9 @@ Syntax: `read_excel(path, sheet="sheet_name")`
 ```{r}
 # This chunk will run into an error
 
-wheat_2022 <- read_excel("data/wheat_excel.xlsx", sheet = "2022")
-
-head(wheat_2022)
+# wheat_2022 <- read_excel("data/wheat_excel.xlsx", sheet = "2022")
+# 
+# head(wheat_2022)
 ```
 
 This error means that we haven't installed the required package for `read_excel()`
@@ -116,7 +121,7 @@ head(wheat_2022)
 
 ## 2.3 here() function
 
-**`here()`** uses a reasonable heuristics to find your project's files, based on the current working directory at the time when the package is loaded. It will always locate the files relative to your project root.
+**`here()`** uses a reasonable heuristics to find your project's files, based on the current working directory at the time when the package is loaded. It will always locate the files relative to your project root.
 
 Syntax:
 
@@ -176,9 +181,11 @@ While this works fine, look at how difficult it is to type it out. This code pro
 
 Dplyr is a package that helps you to manipulate data in a dataframe. We can select, filter and mutate data within the df.
 
-1.  Select: To choose columns from a df
-2.  Filter: To choose certain rows of data based on a condition
-3.  Mutate: To change data (from one datatype to another for example); i.e, to manipulate data
+1.  **Select**: To choose columns from a df
+2.  **Filter**: To choose certain rows of data based on a condition
+3.  **Mutate**: To change data (from one datatype to another for example); i.e, to manipulate data
+4.  **Slice**: To subset rows based on index/position
+5.  **Rename**: To change or "rename" column names
 
 ## 4.1 Pipe operator `%>%` or `|>`
 
@@ -216,7 +223,7 @@ Now let's play around with dplyr!
 
 The task is to:
 
-1.  select 3 columns: time, volumne and open_int
+1.  Select 3 columns: time, volume and open_int
 2.  Create new columns for month and year (Hint: extract from `time`)
 
 ```{r}
@@ -228,9 +235,9 @@ head(wheat_small)
 ```{r}
 # This chunk will run into an error
 
-wheat_small <- wheat_small |>
-                mutate(year = year(time), month = month(time))
-head(wheat_small)
+# wheat_small <- wheat_small |>
+#                 mutate(year = year(time), month = month(time))
+# head(wheat_small)
 ```
 
 What is this error?
@@ -247,6 +254,12 @@ wheat_small <- df_wheat_clean |>
                 mutate(time = mdy(time)) |> # Converting to date-time object
                 mutate(year = year(time), month = month(time))
 head(wheat_small)
+```
+
+Now, suppose I want to pull out rows 3, 4 and 5
+
+```{r}
+wheat_small |> slice(3:5)
 ```
 
 # 5. Plotting using `ggplot`
@@ -370,7 +383,7 @@ stargazer(wheat_lm, type = "text", digits = 0,
     1.  This is arbitrary, there are no strict rules.
     2.  Try to re-use names, but don't over use the same name. You will learn the trade-off as you code more.
 
-# 9. Save your work as an R Project
+# 9. Save your work as an R Project (Optional)
 
 1.  Create a new R Project
 2.  Create R Project in existing library
