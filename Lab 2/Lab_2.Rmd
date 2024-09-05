@@ -8,7 +8,11 @@ date: "2024-09-05"
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# 1. Creating an R project
+# 1. Creating R project for your assignment
+
+Creating an R project points to that specific file as the working directory. Opening the R Project tells R Studio that this is the working directory you want.
+
+Steps to create an R Project:
 
 1.  Create folder for "Assignment1" in "FRE501" folder
 
@@ -35,6 +39,8 @@ Try
 combined <- read_excel(here("data","assign1A_data.xlsx"),sheet="OI_combined")
 ```
 
+## 2.1 In case here() does not work
+
 If the path has been set to **some other directory**, follow these steps:
 
 1\. In the `Files` section (on your right), navigate to your "Assignment 1" folder and open that folder.
@@ -57,6 +63,8 @@ library(here)
 wheat_2022 <- read_excel(here("data/wheat_excel.xlsx"), sheet = "2022")
 head(wheat_2022)
 ```
+
+## 2.2 Other troubleshooting options
 
 If this **did not work** for you, got to Console and enter the following:
 
