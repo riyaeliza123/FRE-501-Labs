@@ -7,3 +7,78 @@ date: "2024-09-05"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+# 1. Creating an R project
+
+1.  Create folder for "Assignment1" in "FRE501" folder
+
+2.  Open Rstudio, create a new RProject (File\>\>New Project)
+
+3.  Select "Existing Directory"
+
+![](img/directory.png){width="478"}
+
+4.  Navigate to your Assignment1 folder using the "Browse" option
+
+![](img/browse.png){width="477"}
+
+5.  Click on "Create project"
+6.  Done!
+
+# 2. Here() to locate your file
+
+Check what your current working directory is. Type "here()" in your console. If it prints the path to your assignments folder, then path is correctly set!
+
+Try
+
+```         
+combined <- read_excel(here("data","assign1A_data.xlsx"),sheet="OI_combined")
+```
+
+If the path has been set to **some other directory**, follow these steps:
+
+1\. In the `Files` section (on your right), navigate to your "Assignment 1" folder and open that folder.
+
+2\. Click on the "gear" icon
+
+![](img/gear.png){width="477"}
+
+3.  Click on "Set as working directory"
+4.  Now try to run the here() function as mentioned in the assignment
+
+```         
+combined <- read_excel(here("data","assign1A_data.xlsx"),sheet="OI_combined")
+```
+
+```{r}
+library(readxl)
+library(here)
+
+wheat_2022 <- read_excel(here("data/wheat_excel.xlsx"), sheet = "2022")
+head(wheat_2022)
+```
+
+If this **did not work** for you, got to Console and enter the following:
+
+```         
+set_here("C:/Users/hp/Desktop/FRE 501/Assignments/Assignment1")
+```
+
+(you should enter the file path to your assignment folder)
+
+Now, re-run your here() cell and it should work!
+
+# 3. What is an RDS file?
+
+1.  RDS stands for R Data Serialization
+2.  It is a common format for saving R objects (dataframes) - preserves the state of R objects within sessions
+3.  Saving an object as an RDS file in R allows you to work on it later, unlike a file with a CSV extension.
+4.  RDS files are in a binary format, meaning it takes less time to import and export - use this for large dataframes
+
+# 4. Package conflicts
+
+## 4.1 What does dplyr::filter() mean?
+
+This means that the package being used (filter()) is taken from the "dplyr" package. The reason this is mentioned explicitly is because filter() function exists in other libraries like the "stats" library, and they want you to make sure which filter() function you want. Both the filter() functions work differently.
+
+The double colon (::) is to show relation of a package to a function.
