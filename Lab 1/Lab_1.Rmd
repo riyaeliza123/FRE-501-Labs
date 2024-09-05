@@ -3,7 +3,6 @@ title: "Lab 1 FRE 501"
 output:
   html_document:
     df_print: paged
-    keep_md: true
   pdf_document: default
 date: "2024-08-20"
 ---
@@ -50,8 +49,10 @@ When you encounter a package for the first time ever, you need to "install" the 
 Once you have installed a package onto your computer, you need to import only **necessary** packages to your workbook. Below are the packages needed for this specific lab.
 
 ```{r}
-
 options(warn = -1) # To supress warnings
+```
+
+```{r}
 
 library(lubridate) # For handling date and time
 library(readr)     # For reading data (read_csv, read_excel etc.)
@@ -97,9 +98,9 @@ Syntax: `read_excel(path, sheet="sheet_name")`
 ```{r}
 # This chunk will run into an error
 
-# wheat_2022 <- read_excel("data/wheat_excel.xlsx", sheet = "2022")
-# 
-# head(wheat_2022)
+wheat_2022 <- read_excel("data/wheat_excel.xlsx", sheet = "2022")
+
+head(wheat_2022)
 ```
 
 This error means that we haven't installed the required package for `read_excel()`
@@ -177,7 +178,7 @@ wheat_small <- df_wheat |>
 
 While this works fine, look at how difficult it is to type it out. This code produced a lot of errors before I finally got each section of it correct.
 
-# 4. Data preprocessing using `Dplyr`
+# 4. Data processing using `Dplyr`
 
 Dplyr is a package that helps you to manipulate data in a dataframe. We can select, filter and mutate data within the df.
 
