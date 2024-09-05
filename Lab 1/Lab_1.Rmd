@@ -98,9 +98,9 @@ Syntax: `read_excel(path, sheet="sheet_name")`
 ```{r}
 # This chunk will run into an error
 
-wheat_2022 <- read_excel("data/wheat_excel.xlsx", sheet = "2022")
-
-head(wheat_2022)
+# wheat_2022 <- read_excel("data/wheat_excel.xlsx", sheet = "2022")
+# 
+# head(wheat_2022)
 ```
 
 This error means that we haven't installed the required package for `read_excel()`
