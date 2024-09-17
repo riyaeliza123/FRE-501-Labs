@@ -1,0 +1,84 @@
+---
+title: "demo"
+output: html_document
+date: "2024-09-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(janitor)
+```
+
+```{r}
+data <- read_csv("data/wheat_historical.csv")
+
+```
+
+```{r}
+head(data)
+```
+
+```{r}
+df_clean <- data |>
+clean_names() |>
+mutate(time = mdy(time)) |>
+arrange(desc(time)) |>
+filter(volume>100000) |>
+filter(time>2024-01-01)
+
+
+df_clean$percent_chg <- gsub("%","", as.character(df_clean$percent_chg))
+
+df_clean
+  
+```
+
+```{r}
+
+# ggplot(df_clean, aes(open_int)) +
+#   geom_histogram()
+
+
+```
+
+```{r}
+ggplot(df_clean, aes(open_int)) +
+  geom_histogram(bins = 20) +
+  labs(
+    title = "Time v/s open interest",
+    x = "Open Interest",
+    y = "Count"
+  )
+```
+
+```{r}
+head(data)
+```
+
+```{r}
+clean_df <- data |> 
+  clean_names() |>
+  mutate(time = mdy(time)) |>
+  mutate(year = year(time)) |>
+  filter(year == 2022) |>
+  select(-year,-low)
+```
+
+```{r}
+ggplot(clean_df, aes(time, open_int)) +
+          geom_line() +
+  labs(
+    title = "2022 wheat historical data",
+    x = "Date",
+    y = "Open Interest"
+      
+  )
+```
+
+```{r}
+corn_wasde <- readRDS("corn.RDS")
+```
