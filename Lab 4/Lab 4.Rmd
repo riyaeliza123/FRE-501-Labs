@@ -1,0 +1,252 @@
+---
+title: "Lab 4"
+output: html_document
+date: "2024-10-08"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Import libraries
+
+```{r}
+library(here)
+library(lubridate)
+library(readxl)
+library(janitor)
+library(tidyverse)
+library(sf)
+```
+
+```{r}
+electricity_district <- read_csv("studentData/electricity_district.csv")
+head(electricity_district)
+```
+
+```{r}
+dictionary <- read_csv("studentData/dictionary.csv")
+head(dictionary)
+```
+
+# Exploring the data
+
+```{r}
+dictionary |>
+  filter (name == "Hinton / Edson")
+```
+
+```{r}
+population <- read_csv("studentData/population.csv")
+head(population)
+```
+
+# Plotting using shape files
+
+```{r}
+planning_areas <- st_read("studentData/shape/AESO_Planning_Areas.shp") |>
+  mutate(Area_ID = as.numeric(Area_ID))
+head(planning_areas)
+```
+
+Let's build a basic map to understand the capabilities of a shape file.
+
+```{r}
+# Basic plot
+base_map <- ggplot(planning_areas) +
+  geom_sf() +    
+  labs(title = "Alberta") 
+base_map
+```
+
+Perfect! Now we want to fill this map with data. For the moment, we only care about 9 districts given in the dataset "districts_included.csv".
+
+```{r}
+districts_included <- read.csv("studentData/districts_included.csv") 
+districts_included
+```
+
+In order to plot those 9 district, the first approach is to conduct an inner join, assuming we don't care about the rest of the districts.
+
+```{r}
+planning_areas_trial <- planning_areas %>%
+  inner_join(districts_included, by = "Area_ID")
+head(planning_areas_trial)
+```
+
+Let's plot this new data frame (the output of our inner join).
+
+```{r}
+alberta <- ggplot(planning_areas_trial) +
+  geom_sf(fill = "lightblue", color = "black") +    
+  geom_sf_text(data = st_centroid(planning_areas_trial),             
+               aes(label = Area_ID),                   
+               color = "darkred", size = 3) +       
+  labs(title = "Alberta") 
+alberta
+```
+
+This map, while focusing on just our problem at hand, is not a complete solution as it does not show the entire map. This output is not desirable. Let's make some small changes in the data to obtain the full picture.
+
+```{r}
+planning_areas <- planning_areas %>%
+  left_join(districts_included, by = "Area_ID")
+head(planning_areas)
+```
+
+```{r}
+alberta_complete <- ggplot(planning_areas) +
+  geom_sf(fill = "lightblue", color = "black") +    
+  geom_sf_text(data = st_centroid(planning_areas),             
+               aes(label = Area_ID),                   
+               color = "darkred", size = 3) +       
+  labs(title = "Alberta") 
+alberta_complete
+```
+
+Out of this, we only want to label the 9 districts :
+
+|                          |             |
+|--------------------------|-------------|
+| **Name**                 | **Area_ID** |
+| Lethbridge               | 54          |
+| Athabasca / Lac La Biche | 27          |
+| Vegreville               | 56          |
+| High Level               | 18          |
+| Alliance / Battle River  | 36          |
+| Brooks                   | 47          |
+| Grande Prairie           | 20          |
+| Wabamun                  | 40          |
+| Hinton / Edson           | 29          |
+
+So, we will create a new column in "planning_areas" called id_label that returns the Area_ID if the Area_ID is included in the 9 districts and NA if it is not.
+
+One idea to do this is to create the id_label column in "districts_included" and then left join it to planning areas.
+
+```{r}
+districts_included <- districts_included |>
+  mutate(id_label = Area_ID) |>
+  select(Area_ID, id_label)
+districts_included
+```
+
+```{r}
+planning_areas_joined <- planning_areas |>
+  left_join(districts_included, by = "Area_ID") |>
+  mutate(id_label = as.character(id_label)) |>
+  mutate(id_label = ifelse(is.na(id_label), "", id_label))
+head(planning_areas_joined)
+```
+
+Now, as you can see, id_label has empty rows for the districts we aren't concerned about. Let's plot this data frame with id_label as the labels.
+
+```{r}
+st_centroid(planning_areas_joined)
+```
+
+```{r}
+alberta_9_dist <- ggplot(planning_areas_joined) +
+  geom_sf(fill = "lightblue", color = "black") +    
+  geom_sf_text(data = st_centroid(planning_areas_joined),             
+               aes(label = id_label),                   
+               color = "darkred", size = 3) +       
+  labs(title = "Alberta ") 
+alberta_9_dist
+```
+
+We have finally created a desirable chart. Let's attempt some visualizations.
+
+Problem statement: Visualize the relative energy consumption in the 9 districts.
+
+For this, we need the population of the 9 districts, their respective energy consumption and consumption per individual (compare apples to apples).
+
+```{r}
+electricity_district <- electricity_district |>
+  rename("18" = AREA18,
+         "20" = AREA20,
+         "27" = AREA27,
+         "29" = AREA29,
+         "36" = AREA36,
+         "40" = AREA40,
+         "47" = AREA47,
+         "54" = AREA54,
+         "56" = AREA56)
+head(electricity_district)
+```
+
+```{r}
+electricity_long <- electricity_district %>%
+  pivot_longer(cols = c("18","20","27","29","36","40","47","54","56"),         
+               names_to = "Area_ID",       
+               values_to = "electricity_use") 
+head(electricity_long)
+```
+
+We want to get the average energy consumption for each Area_ID
+
+```{r}
+mean_electricity <- aggregate(electricity_use ~ Area_ID, 
+                              data = electricity_long, FUN = mean)
+
+mean_electricity <- mean_electricity |>
+   mutate(Area_ID = as.numeric(Area_ID))
+
+print(mean_electricity)
+```
+
+```{r}
+# We're only working with 2011
+
+population_2011 <- population |>
+  filter(year == 2011) |>
+  mutate(Area_ID = code) |>
+  mutate(Area_ID = as.numeric(Area_ID))
+population_2011
+```
+
+```{r}
+
+elec_pop <- mean_electricity |>
+  left_join(population_2011, by = "Area_ID")
+elec_pop
+```
+
+Create a column for per capita consumption.
+
+```{r}
+elec_pop_final <- elec_pop |>
+  mutate(per_capita = electricity_use/population) 
+
+elec_pop_final
+```
+
+In order to plot this, we need to bring back the shape data, and pre-process such that only the 9 districts are plotted.
+
+```{r}
+shape_viz <- planning_areas_joined |>
+  left_join(elec_pop_final, by = "Area_ID")
+head(shape_viz)
+```
+
+```{r}
+ggplot() +
+  geom_sf(data = shape_viz,
+          aes(fill = ifelse(per_capita > 0, per_capita, NA))) +
+  # scale_fill_viridis_c(na.value = "gray90") +      
+  labs(title = "Electricity consumption per capita",
+       fill = "Consumption") 
+```
+
+To make this better, let's also add the labels (of each district) back to this plot.
+
+```{r}
+ggplot() +
+  geom_sf(data = shape_viz,
+          aes(fill = ifelse(per_capita > 0, per_capita, NA))) +
+  scale_fill_viridis_c(na.value = "gray90") +  
+  geom_sf_text(data = st_centroid(planning_areas_joined),             
+               aes(label = id_label),                   
+               color = "white", size = 3) +
+  labs(title = "Electricity consumption per capita",
+       fill = "Consumption") 
+```
